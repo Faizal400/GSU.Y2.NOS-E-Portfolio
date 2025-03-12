@@ -191,4 +191,135 @@ Transmission delay is L/R -> L(bits)/R(bits/sec) where:
 - Propagation enviroment effects: reflection, obstruction by objects and interference
 
 ## Radio Link Types
+- Terrestial microwave: up to 45 Mbps channels
+- Wirless LAN (WiFi): up to 100 Mbps
+- Wide-area (e.g cellular): 4G Cellular: around 10's Mbps
+- Satelite: Up to 45 Mbps per channel. 270 milisec end-end delay. geosynchronous versus low-earth-orbit.
 
+# Network Core: Packet/Circuit Switching
+
+## The Network Core
+- Mesh of interconnected routers
+- Packet-switching: hosts break application layer messages into packets
+- forward packets from one router to the next, across links on path from source to destination
+- each packet transmitted at full link capacity
+
+## Packet switching: store and forward
+- Transmission delay: Takes L/R seconds to transmit L-bit packet into link at R bps
+- Store and forward: entire packet must arrive at router before it can be transmitted on next link
+- End-end delay: 2L/R (above): assuming zero propagation delay
+
+## Packet switching: Queueing Delay, Loss
+- If arrival rate (in bps) to link exceeds transmission rate (bps) of link for a period of time:
+> - Packets will queue, waiting to be transmitted on output link
+> - Packets can be dropped (lost) if memory buffer in router fills up
+
+## Two key network core functions
+- Forwarding:
+> - Local action: Moving arriving packets from router's input to appropriate router output link
+- Routing:
+> - Global action: determine source-destination paths taken by packets
+> - routing algorithms
+
+## Alternative to packet switching: circuit switching
+- End-end resources allocated to, reserved for "call" between source and destination
+- Dedicated resources: no sharing
+- Circuit like (gauaranteed) performance
+- Circuit segment idle (if not used by call, no sharing)
+- Communly used in traditional telephone networks
+
+## Circuit switching: FDM and TDM
+- Frequency Division Muliplexing (FDM):
+> - Optical electromagnetic frequencies divided into narrow frequency bands
+> - Each call is allocated its own band, can transmit at max rate of that narrow band
+- Time Division Mulitplexing (TDM):
+> - Time divided into slots
+> - each call allocated peridodic slot(s), can transmit at maximum rate of (wider) frequency band, but only during its time slot(s)
+
+## Packet Switching vs Circuit Switching
+Example: 1Gb/s link
+Each user:
+> 100 Nb/s when "active"
+> active 10% of the time
+- Circuit switching: 10 users
+- Packet switching: With 35 users, probability > 10 active at same time is less than 0.0004*
+- Packet switching allows more users to use the network
+
+## Packet switching: Satistical Multiplexing
+How did we get the above 0.0004?
+![image](https://github.com/user-attachments/assets/5ce1fbcf-4f22-42b1-9374-4fa72ad810c4)
+
+## Packet vs Circuit
+- Packet  switching is great for burst data as its simpler
+
+## Internet structure: A network of networks
+- Hosts connect to internet via access internet service providers (ISPs)
+> - Residential, enterprise (company, university, commercial) ISPs
+- Access ISPs in turn must be interconnected
+> - So that any two hosts can send packets to each other
+- Resulting network of networks is very complex
+> - Evolution was driven by economics and national policies
+
+## Scaling challenges
+- Connecting each access ISP to eahc other directly doesn't scale O(N^2) connections
+- With N ISPs, each ISP needs to connect to (N-1) other ISPs
+- Total Connections = (N*(N-1))/2
+> - Each ISP must establish a direct link with every other ISP
+> - As N (the number of ISPs) increases, the required connections grows quadratically
+
+## How is this solved in practice?
+The internet uses a hierarhical structure to address teh scalability issue:
+- Core ISPs (Tier 1 ISPs):
+> - A few, high-capacity large scale ISPs from the backbone of the internet and interconnect directly
+- Peering agreeements
+> - ISPs use peering at internet exchange points (IXPs) to share traffic with multiple ISPs simultaneously, reducing the need for direct links
+- Transit ISPs:
+> - Smaller ISPs user larger ISPs to route traffic indirectly to other ISPs
+
+## Internet structure: Multi-Tiered Hierachy
+- Tier 1 ISPs: Large, national/international coverage
+- Regional ISPs: Connect access networks to ISPs
+- Content provider networks: (e.g google) run their own network to bring services close to end users.
+
+## Internet structure: a network of networks
+- A packet passes through many networks
+- Tier 3 ISPs and local ISPs are customers of higher tier ISPs connecting them to the rest of the internet
+- Tier 2 ISPs: smaller (often regional) ISPs. Connect to one or more tier 1 ISPs possibly other tier 2 ISPs
+
+# Challenges in Networked Systems
+
+## Asynchronous Operation
+- Fundamental constraint: speed of light
+- Consider:
+> - How many cycles does your 3GHZ CPU in London execute before it can possibly get a response from a message it sends to a server in Palo Alto?
+> - London to Palo Alto: 8,609 km
+> - Travelling at 300,000 km/s: 28.7 miliseconds
+> - Then back to london: 2*28.7 = 57.39 miliseconds
+> - 3,000,000,000 cycles/sec * 0.05739 = 172,179,999 cyles
+- Communication feedback is always dated
+
+## Prone to failure
+- To send a message, all components along a path must function correctly
+> - Software, wireless acces point, firewall, links, network interface cards, switches..
+> - including human operators
+- Consider: 50 components in a system, each working correctly 99% of the time -> 39.5% chance communication will fail
+- Plus, recall:
+> - Scale -> Lots of components
+> - Asynchrony -> Takes a long time to hear (bad) news
+> - Federation (internet) -> hard to indetify fault or assign blame
+
+## Cumulative Reliability
+- System Overview:
+> - The system has 50 components
+> - Eahc component works correctly 99% of the time (or has a failure rate of 1-0.99 = 0.01)
+- System Reliability:
+> - For the system to work, all 50 components must function correctly at the same time.
+> - The probability of a single component working correctly is P(correct) = 0.99
+> - Assuming the components are independent, the probabiltiy all 50 components is
+> - ![image](https://github.com/user-attachments/assets/fda15ad3-c908-47a8-bcdb-6536fca77d18)
+- Chance of Failure:
+> - The probability of the system failing is:
+> - ![image](https://github.com/user-attachments/assets/e400c3e0-0522-44f5-9075-069ac7cd65cc)
+
+## Interpretation
+- Even though each individual component is highly reliable (99%), the reliability of the entire system drops significantly because the failure of any single component leads to a system failure. 
