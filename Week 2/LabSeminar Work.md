@@ -92,31 +92,31 @@ def dhcp_server():
     server_socket.bind(("0.0.0.0", 67))  # DHCP typically uses port 67
     server_socket.listen(5)
     
-    print("🚀 DHCP Server is running...")
+    print(" DHCP Server is running...")
 
     while True:
         client_socket, client_addr = server_socket.accept()
-        print(f"📡 Connection from {client_addr}")
+        print(f"Connection from {client_addr}")
 
         request = client_socket.recv(1024).decode()
 
         if request == "DHCP DISCOVER":
             if dhcp_pool:
                 offered_ip = dhcp_pool.pop(0)
-                print(f"✅ Offering IP: {offered_ip} to {client_addr}")
+                print(f"Offering IP: {offered_ip} to {client_addr}")
                 client_socket.send(f"DHCP OFFER {offered_ip}".encode())
             else:
-                print("❌ No available IPs in the DHCP pool!")
+                print(" No available IPs in the DHCP pool!")
                 client_socket.send("DHCP NAK".encode())
 
         elif "DHCP REQUEST" in request:
             requested_ip = request.split()[-1]
             if requested_ip not in leases.values():
                 leases[client_addr] = requested_ip
-                print(f"🔹 {client_addr} assigned {requested_ip}")
+                print(f"{client_addr} assigned {requested_ip}")
                 client_socket.send(f"DHCP ACK {requested_ip}".encode())
             else:
-                print(f"❌ IP {requested_ip} is already assigned!")
+                print(f"IP {requested_ip} is already assigned!")
                 client_socket.send("DHCP NAK".encode())
 
         client_socket.close()
@@ -133,10 +133,10 @@ def dhcp_client():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(("127.0.0.1", 67))  # Connect to DHCP server
     
-    print("📡 Sending DHCP DISCOVER...")
+    print("Sending DHCP DISCOVER...")
     client_socket.send("DHCP DISCOVER".encode())
     response = client_socket.recv(1024).decode()
-    print(f"📩 Server Response: {response}")
+    print(f"Server Response: {response}")
 
     if "DHCP OFFER" in response:
         offered_ip = response.split()[-1]
@@ -144,10 +144,10 @@ def dhcp_client():
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect(("127.0.0.1", 67))
         
-        print(f"🔄 Sending DHCP REQUEST for {offered_ip}...")
+        print(f"Sending DHCP REQUEST for {offered_ip}...")
         client_socket.send(f"DHCP REQUEST {offered_ip}".encode())
         final_response = client_socket.recv(1024).decode()
-        print(f"📩 Server Response: {final_response}")
+        print(f"Server Response: {final_response}")
 
     client_socket.close()
 
